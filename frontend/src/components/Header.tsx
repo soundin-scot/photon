@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
-import { useDmxStore } from '../store/dmxStore'
-import UniverseSelector from './UniverseSelector'
+import { useDmxStore } from '@/store/dmxStore'
+import UniverseSelector from '@/components/UniverseSelector'
 
 interface HeaderProps {
   page: number

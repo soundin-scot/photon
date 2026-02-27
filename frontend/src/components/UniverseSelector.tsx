@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { useDmxStore } from '../store/dmxStore'
+import { useDmxStore } from '@/store/dmxStore'
 
 export default function UniverseSelector() {
   const universeCount = useDmxStore((s) => s.universeCount)

@@ -1,4 +1,5 @@
-const BASE = '/api'
+const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || ''
+const BASE = `${BACKEND}/api`
 
 export interface Config {
   universeCount: number

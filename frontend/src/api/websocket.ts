@@ -1,4 +1,4 @@
-import { useDmxStore } from '../store/dmxStore'
+import { useDmxStore } from '@/store/dmxStore'
 
 type WsMessage = Record<string, unknown>
 
@@ -54,7 +54,12 @@ export function connect(): void {
     return
   }
 
-  const url = `ws://${window.location.host}/ws`
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
+  const wsHost = backendUrl
+    ? backendUrl.replace(/^https?:\/\//, '')
+    : window.location.host
+  const wsProto = window.location.protocol === 'https:' ? 'wss' : 'ws'
+  const url = `${wsProto}://${wsHost}/ws`
   socket = new WebSocket(url)
 
   socket.addEventListener('open', () => {

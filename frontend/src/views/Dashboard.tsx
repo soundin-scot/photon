@@ -1,15 +1,13 @@
 import { useMemo } from 'react'
-import { useDmxStore } from '../store/dmxStore'
-import ChannelFader from '../components/ChannelFader'
-
-const CHANNELS_PER_PAGE = 32
+import { useDmxStore } from '@/store/dmxStore'
+import ChannelFader from '@/components/ChannelFader'
 
 interface DashboardProps {
   page: number
-  onPageChange: (page: number) => void
+  channelsPerPage: number
 }
 
-export default function Dashboard({ page, onPageChange: _onPageChange }: DashboardProps) {
+export default function Dashboard({ page, channelsPerPage }: DashboardProps) {
   const activeUniverse = useDmxStore((s) => s.activeUniverse)
   const channelData = useDmxStore((s) => s.channels[activeUniverse])
 
@@ -18,8 +16,8 @@ export default function Dashboard({ page, onPageChange: _onPageChange }: Dashboa
     [channelData]
   )
 
-  const startIdx = page * CHANNELS_PER_PAGE
-  const endIdx = Math.min(startIdx + CHANNELS_PER_PAGE, 512)
+  const startIdx = page * channelsPerPage
+  const endIdx = Math.min(startIdx + channelsPerPage, 512)
   const pageChannels = channels.slice(startIdx, endIdx)
 
   const nonZeroCount = useMemo(
@@ -27,7 +25,7 @@ export default function Dashboard({ page, onPageChange: _onPageChange }: Dashboa
     [channels]
   )
 
-  const totalPages = Math.ceil(512 / CHANNELS_PER_PAGE)
+  const totalPages = Math.ceil(512 / channelsPerPage)
 
   return (
     <div
@@ -147,5 +145,3 @@ export default function Dashboard({ page, onPageChange: _onPageChange }: Dashboa
     </div>
   )
 }
-
-export { CHANNELS_PER_PAGE }

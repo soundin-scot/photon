@@ -1,5 +1,5 @@
 import { memo, useCallback, useRef } from 'react'
-import { useDmxStore } from '../store/dmxStore'
+import { useDmxStore } from '@/store/dmxStore'
 
 interface ChannelFaderProps {
   universe: number
