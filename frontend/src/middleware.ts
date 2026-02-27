@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { verifyToken } from '@/lib/auth'
+import { verifyToken } from '@/lib/jwt'
 
 const PUBLIC_EXACT = new Set(['/', '/login', '/register'])
 
@@ -10,7 +10,6 @@ const PUBLIC_PREFIXES = [
   '/api/auth/register',
 ]
 
-// Endpoints that use their own auth (e.g., relay service secret)
 // Endpoints that use their own auth (e.g., relay service secret)
 const SERVICE_AUTH_PATTERNS = [
   /^\/api\/instances\/[^/]+\/heartbeat$/,

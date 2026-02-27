@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { Suspense, useEffect, useState, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { connect, disconnect } from '@/api/connection'
 import { fetchConfig, fetchUniverses } from '@/api/rest'
@@ -13,7 +13,7 @@ import ShowfilePanel from '@/components/ShowfilePanel'
 const CHANNELS_PER_PAGE = 32
 const TOTAL_PAGES = Math.ceil(512 / CHANNELS_PER_PAGE)
 
-export default function DashboardPage() {
+function DashboardInner() {
   const searchParams = useSearchParams()
   const setUniverseCount = useDmxStore((s) => s.setUniverseCount)
   const setChannels = useDmxStore((s) => s.setChannels)
@@ -35,7 +35,6 @@ export default function DashboardPage() {
       relayInstanceId: instanceId || undefined,
     })
 
-    // In direct mode, also fetch via REST for initial state
     if (mode === 'direct') {
       void (async () => {
         try {
@@ -91,5 +90,13 @@ export default function DashboardPage() {
       </main>
       {instanceId && <ShowfilePanel />}
     </div>
+  )
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense>
+      <DashboardInner />
+    </Suspense>
   )
 }
