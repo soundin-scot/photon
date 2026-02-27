@@ -1,4 +1,5 @@
 #include "web/WsBroadcaster.h"
+#include <algorithm>
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 #include <chrono>
@@ -29,6 +30,21 @@ void WsBroadcaster::removeConnection(crow::websocket::connection* conn) {
     spdlog::info("WebSocket client disconnected (total: {})", connections_.size());
 }
 
+void WsBroadcaster::addObserver(BroadcastObserver* observer) {
+    std::lock_guard lock(observerMutex_);
+    observers_.push_back(observer);
+    spdlog::info("Broadcast observer added");
+}
+
+void WsBroadcaster::removeObserver(BroadcastObserver* observer) {
+    std::lock_guard lock(observerMutex_);
+    observers_.erase(
+        std::remove(observers_.begin(), observers_.end(), observer),
+        observers_.end()
+    );
+    spdlog::info("Broadcast observer removed");
+}
+
 void WsBroadcaster::start() {
     if (running_.exchange(true)) return;
     thread_ = std::thread([this] { broadcastLoop(); });
@@ -45,11 +61,21 @@ void WsBroadcaster::broadcastLoop() {
     auto interval = std::chrono::microseconds(static_cast<long>(1'000'000.0 / hz_));
     auto nextTick = clock::now();
 
+    // Notify observers of universe count on start
+    {
+        std::lock_guard lock(observerMutex_);
+        for (auto* obs : observers_) {
+            try {
+                obs->onUniverseCount(mergeBuffer_.getUniverseCount());
+            } catch (...) {}
+        }
+    }
+
     while (running_.load()) {
         nextTick += interval;
 
-        std::lock_guard lock(connMutex_);
-        if (!connections_.empty()) {
+        {
+            std::lock_guard lock(connMutex_);
             for (uint16_t u = 0; u < mergeBuffer_.getUniverseCount(); ++u) {
                 if (!mergeBuffer_.isUniverseDirty(u)) continue;
                 mergeBuffer_.clearUniverseDirty(u);
@@ -69,6 +95,16 @@ void WsBroadcaster::broadcastLoop() {
                     try {
                         conn->send_text(payload);
                     } catch (...) {}
+                }
+
+                // Notify observers with the already-serialised payload (zero-copy)
+                {
+                    std::lock_guard obsLock(observerMutex_);
+                    for (auto* obs : observers_) {
+                        try {
+                            obs->onDmxState(u, payload);
+                        } catch (...) {}
+                    }
                 }
             }
         }

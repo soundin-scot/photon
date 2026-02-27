@@ -1,4 +1,5 @@
 #include "application/Application.h"
+#include "relay/RelayClient.h"
 #include "protocol/ArtNetSender.h"
 #include <spdlog/spdlog.h>
 #include <chrono>
@@ -32,6 +33,14 @@ void Application::start(const Config& config) {
     outputScheduler_->start();
     wsBroadcaster_->start();
 
+    // Start relay client if configured
+    if (config.hasRelay()) {
+        relayClient_ = std::make_unique<RelayClient>(config.relayUrl, config.relayToken, actionQueue_);
+        wsBroadcaster_->addObserver(relayClient_.get());
+        relayClient_->start();
+        spdlog::info("Relay client enabled — connecting to {}", config.relayUrl);
+    }
+
     engineThread_ = std::thread([this] { engineLoop(); });
 
     webThread_ = std::thread([this] {
@@ -47,6 +56,11 @@ void Application::stop() {
     if (!running_.exchange(false)) return;
 
     spdlog::info("Shutting down...");
+    if (relayClient_) {
+        wsBroadcaster_->removeObserver(relayClient_.get());
+        relayClient_->stop();
+        relayClient_.reset();
+    }
     webServer_->stop();
     wsBroadcaster_->stop();
     outputScheduler_->stop();

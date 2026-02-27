@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { sendMessage } from '@/api/websocket'
+import { sendMessage } from '@/api/connection'
 
 interface DmxState {
   universeCount: number

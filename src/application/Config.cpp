@@ -12,6 +12,10 @@ Config Config::fromArgs(int argc, char* argv[]) {
     cfg.frontendDir = PHOTON_FRONTEND_DIR;
 #endif
 
+    // Check environment variables for relay config
+    if (const char* url = std::getenv("PHOTON_RELAY_URL")) cfg.relayUrl = url;
+    if (const char* token = std::getenv("PHOTON_RELAY_TOKEN")) cfg.relayToken = token;
+
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
 
@@ -24,6 +28,8 @@ Config Config::fromArgs(int argc, char* argv[]) {
                       << "  --artnet-ip IP      Art-Net target IP (default: 255.255.255.255)\n"
                       << "  --artnet-port N     Art-Net UDP port (default: 6454)\n"
                       << "  --frontend-dir PATH Path to frontend dist/ directory\n"
+                      << "  --relay-url URL     Relay service WebSocket URL\n"
+                      << "  --relay-token TOKEN Relay instance token (32-byte hex)\n"
                       << "  --help              Show this help\n";
             std::exit(0);
         }
@@ -34,6 +40,8 @@ Config Config::fromArgs(int argc, char* argv[]) {
             else if (arg == "--artnet-ip") cfg.artnetTargetIp = argv[++i];
             else if (arg == "--artnet-port") cfg.artnetPort = static_cast<uint16_t>(std::stoi(argv[++i]));
             else if (arg == "--frontend-dir") cfg.frontendDir = argv[++i];
+            else if (arg == "--relay-url") cfg.relayUrl = argv[++i];
+            else if (arg == "--relay-token") cfg.relayToken = argv[++i];
         }
     }
 

@@ -1,5 +1,7 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useDmxStore } from '@/store/dmxStore'
+import { useInstanceStore } from '@/store/instanceStore'
 import UniverseSelector from '@/components/UniverseSelector'
 
 interface HeaderProps {
@@ -10,8 +12,19 @@ interface HeaderProps {
 }
 
 export default function Header({ page, totalPages, onPageChange, channelsPerPage }: HeaderProps) {
+  const router = useRouter()
   const connected = useDmxStore((s) => s.connected)
   const blackout = useDmxStore((s) => s.blackout)
+  const connectionMode = useInstanceStore((s) => s.connectionMode)
+  const selectedInstanceId = useInstanceStore((s) => s.selectedInstanceId)
+  const [username, setUsername] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then((res) => res.json())
+      .then((data) => setUsername(data.username ?? null))
+      .catch(() => {})
+  }, [])
 
   const handleBlackout = useCallback(() => {
     blackout()
@@ -24,6 +37,15 @@ export default function Header({ page, totalPages, onPageChange, channelsPerPage
   const handleNext = useCallback(() => {
     onPageChange(Math.min(totalPages - 1, page + 1))
   }, [page, totalPages, onPageChange])
+
+  const handleLogout = useCallback(async () => {
+    await fetch('/api/auth/logout', { method: 'POST' })
+    router.push('/login')
+  }, [router])
+
+  const handleBack = useCallback(() => {
+    router.push('/instances')
+  }, [router])
 
   const startCh = page * channelsPerPage + 1
   const endCh = Math.min((page + 1) * channelsPerPage, 512)
@@ -46,8 +68,23 @@ export default function Header({ page, totalPages, onPageChange, channelsPerPage
         userSelect: 'none',
       }}
     >
-      {/* Left: Logo */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+      {/* Left: Logo + back */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+        {selectedInstanceId && (
+          <button
+            onClick={handleBack}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#a3a3a3',
+              cursor: 'pointer',
+              fontSize: '14px',
+              padding: '0 4px',
+            }}
+          >
+            &larr;
+          </button>
+        )}
         <span
           style={{
             width: '7px',
@@ -97,7 +134,7 @@ export default function Header({ page, totalPages, onPageChange, channelsPerPage
               padding: 0,
             }}
           >
-            ←
+            &larr;
           </button>
 
           <span
@@ -109,7 +146,7 @@ export default function Header({ page, totalPages, onPageChange, channelsPerPage
               fontVariantNumeric: 'tabular-nums',
             }}
           >
-            Ch {startCh}–{endCh}
+            Ch {startCh}&ndash;{endCh}
           </span>
 
           <button
@@ -130,12 +167,29 @@ export default function Header({ page, totalPages, onPageChange, channelsPerPage
               padding: 0,
             }}
           >
-            →
+            &rarr;
           </button>
         </div>
+
+        {/* Connection mode badge */}
+        {selectedInstanceId && (
+          <span style={{
+            fontSize: '10px',
+            fontWeight: 600,
+            letterSpacing: '0.05em',
+            textTransform: 'uppercase',
+            padding: '2px 8px',
+            borderRadius: '3px',
+            backgroundColor: connectionMode === 'relay' ? '#ff881122' : '#22c55e22',
+            color: connectionMode === 'relay' ? '#ff8811' : '#22c55e',
+            border: `1px solid ${connectionMode === 'relay' ? '#ff881144' : '#22c55e44'}`,
+          }}>
+            {connectionMode}
+          </span>
+        )}
       </div>
 
-      {/* Right: Connection status + Blackout */}
+      {/* Right: Connection status + user + Blackout */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <span
@@ -183,6 +237,28 @@ export default function Header({ page, totalPages, onPageChange, channelsPerPage
         >
           BLACKOUT
         </button>
+
+        {/* User + logout */}
+        {username && (
+          <>
+            <div style={{ width: '1px', height: '24px', backgroundColor: '#2a2a2a' }} />
+            <span style={{ fontSize: '11px', color: '#a3a3a3' }}>{username}</span>
+            <button
+              onClick={handleLogout}
+              style={{
+                background: 'none',
+                border: '1px solid #2a2a2a',
+                color: '#737373',
+                borderRadius: '4px',
+                padding: '4px 10px',
+                fontSize: '10px',
+                cursor: 'pointer',
+              }}
+            >
+              Logout
+            </button>
+          </>
+        )}
       </div>
     </header>
   )

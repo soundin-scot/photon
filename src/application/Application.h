@@ -12,6 +12,8 @@
 
 namespace photon {
 
+class RelayClient;
+
 class Application {
 public:
     Application();
@@ -32,6 +34,7 @@ private:
     std::unique_ptr<OutputScheduler> outputScheduler_;
     std::unique_ptr<WsBroadcaster> wsBroadcaster_;
     std::unique_ptr<WebServer> webServer_;
+    std::unique_ptr<RelayClient> relayClient_;
 
     std::thread engineThread_;
     std::thread webThread_;

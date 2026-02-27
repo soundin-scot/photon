@@ -16,6 +16,7 @@ add_library(photon_lib STATIC
     src/web/WebServer.cpp
     src/web/RestApi.cpp
     src/web/WsBroadcaster.cpp
+    src/relay/RelayClient.cpp
     src/application/Application.cpp
     src/application/Config.cpp
 )
@@ -25,6 +26,7 @@ target_link_libraries(photon_lib PUBLIC
     Crow::Crow
     nlohmann_json::nlohmann_json
     spdlog::spdlog
+    ixwebsocket::ixwebsocket
 )
 
 if(WIN32)

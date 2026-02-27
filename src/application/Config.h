@@ -13,6 +13,12 @@ struct Config {
     double wsBroadcastHz = 15.0;
     std::string frontendDir;
 
+    // Relay settings (optional — engine connects outbound to relay service)
+    std::string relayUrl;    // e.g. wss://photon-relay.fly.dev/engine
+    std::string relayToken;  // 32-byte hex instance secret
+
+    bool hasRelay() const { return !relayUrl.empty() && !relayToken.empty(); }
+
     static Config fromArgs(int argc, char* argv[]);
 };
 

@@ -33,4 +33,14 @@ FetchContent_Declare(
     GIT_SHALLOW TRUE
 )
 
-FetchContent_MakeAvailable(Crow json spdlog Catch2)
+set(USE_TLS ON CACHE BOOL "" FORCE)
+set(USE_OPEN_SSL ON CACHE BOOL "" FORCE)
+
+FetchContent_Declare(
+    IXWebSocket
+    GIT_REPOSITORY https://github.com/machinezone/IXWebSocket.git
+    GIT_TAG v11.4.5
+    GIT_SHALLOW TRUE
+)
+
+FetchContent_MakeAvailable(Crow json spdlog Catch2 IXWebSocket)
