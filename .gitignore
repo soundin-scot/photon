@@ -1,0 +1,15 @@
+build/
+cmake-build-*/
+node_modules/
+frontend/dist/
+.cache/
+*.o
+*.a
+*.so
+*.dylib
+.DS_Store
+*.swp
+*~
+.idea/
+.vscode/
+compile_commands.json
